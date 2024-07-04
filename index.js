@@ -4,14 +4,21 @@ const cookieParser = require("cookie-parser");
 const { dbConnection } = require("./utils");
 const cors = require("cors");
 const PORT = 8080 || process.env.PORT;
-const { routeNotFound,errorHandler } = require("./middleware/errorMiddlewares.js");
+const {
+  routeNotFound,
+  errorHandler,
+} = require("./middleware/errorMiddlewares.js");
 const routes = require("./routes/index.js");
 dotenv.config();
 dbConnection();
 app = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      "http://localhost:3000",
+      "https://tasknavigation-krishanu7s-projects.vercel.app",
+      "https://tasknavigation-git-main-krishanu7s-projects.vercel.app/",
+    ],
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
