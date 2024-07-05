@@ -15,9 +15,9 @@ app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
+      "http://localhost:5173",
       "https://tasknavigation-krishanu7s-projects.vercel.app",
-      "https://tasknavigation-git-main-krishanu7s-projects.vercel.app/",
+      "https://tasknavigation-git-main-krishanu7s-projects.vercel.app",
     ],
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
