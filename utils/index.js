@@ -1,5 +1,67 @@
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
+const Mailgen = require("mailgen");
+
+const sendWelcomeEmail = async (name, email, password, role, title) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      host: "smtp.gmail.com",
+      auth: {
+        user: "krishanu1137@gmail.com",
+        pass: "ryskuplikbopgyyk",
+      },
+    });
+
+    let MailGenerator = new Mailgen({
+      theme: "default",
+      product: {
+        name: "Task Manager",
+        link: "https://tasknavigation-krishanu7s-projects.vercel.app",
+      },
+    });
+
+    let response = {
+      body: {
+        name: name,
+        intro: "Welcome to the Task Manager Application!",
+        table: {
+          data: [
+            {
+              item: "Role",
+              description: role,
+            },
+            {
+              item: "Title",
+              description: title,
+            },
+            {
+              item: "Password",
+              description: password,
+            },
+          ],
+        },
+        outro: "You can log in to your account using the credentials provided.",
+      },
+    };
+
+    let mail = MailGenerator.generate(response);
+
+    let message = {
+      from: "krishanu1137@gmail.com",
+      to: email,
+      subject: "Welcome to Task Manager",
+      html: mail,
+    };
+
+    await transporter.sendMail(message);
+    console.log("Welcome email sent successfully to", email);
+  } catch (error) {
+    console.error("Error sending welcome email:", error.message);
+    throw new Error("Email sending failed");
+  }
+};
 
 const dbConnection = async () => {
   try {
@@ -23,4 +85,4 @@ const createJWT = (res, userId) => {
 };
 
 
-module.exports = { dbConnection, createJWT };
+module.exports = { dbConnection, createJWT, sendWelcomeEmail };

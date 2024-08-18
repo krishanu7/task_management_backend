@@ -1,6 +1,7 @@
 const User = require("../models/user.js");
 const Notification = require("../models/notification.js");
 const { createJWT } = require("../utils/index.js");
+const { sendWelcomeEmail } = require("../utils/index.js");
 
 const registerUser = async (req, res, next) => {
   try {
@@ -13,7 +14,6 @@ const registerUser = async (req, res, next) => {
         message: "User already exists",
       });
     }
-
     const user = await User.create({
       name,
       email,
@@ -23,23 +23,25 @@ const registerUser = async (req, res, next) => {
       title,
     });
 
-    if (user) {
-      // TODO: changed only for Admin and createJWT
-      createJWT(res, user._id);
-
-      const newUser = await User.findById(user._id).select("-password");
-
-      return res.status(201).json(newUser);
-    } else {
+    if (!user) {
       return res.status(400).json({
         status: false,
-        message: "Invalid user data",
+        message: "Failed to create user",
       });
     }
+    await sendWelcomeEmail(name, email, password, role, title);
+
+    const newUser = await User.findById(user._id).select("-password");
+    return res.status(200).json({
+      status: true,
+      message: "User registered successfully",
+      user: newUser,
+    });
   } catch (error) {
+    console.error("Error during registration:", error.message);
     return res.status(500).json({
       status: false,
-      message: error.message,
+      message: "An error occurred during registration",
     });
   }
 };
@@ -131,9 +133,9 @@ const markNotificationRead = async (req, res) => {
         { $push: { isRead: userId } }
       );
     }
-    res.status(200).json({status: true, message: "Done"})
+    res.status(200).json({ status: true, message: "Done" });
   } catch (error) {
-    return res.status(500).json({status: false, message: error.message})
+    return res.status(500).json({ status: false, message: error.message });
   }
 };
 
@@ -174,7 +176,9 @@ const changeUserPassword = async (req, res) => {
     const { userId } = req.user;
     const { password } = req.body;
     if (!password) {
-      return res.status(400).json({ status: false, message: "Password is required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Password is required" });
     }
     const user = await User.findById(userId);
     if (user) {
@@ -192,7 +196,6 @@ const changeUserPassword = async (req, res) => {
     return res.status(500).json({ status: false, message: error.message });
   }
 };
-
 
 const activateUserProfile = async (req, res) => {
   try {
